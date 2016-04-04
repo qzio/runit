@@ -35,6 +35,11 @@ void sig_cont_handler (void) {
   sigc++;
   write(selfpipe[1], "", 1);
 }
+void sig_term_handler (void) {
+  strerr_warn3(INFO, "cought sig_term", ": act as sig_cont_handler.", 0);
+  sigc++;
+  write(selfpipe[1], "", 1);
+}
 void sig_int_handler (void) {
   sigi++;
   write(selfpipe[1], "", 1);
@@ -68,6 +73,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
   sig_catch(sig_int, sig_int_handler);
   sig_block(sig_pipe);
   sig_block(sig_term);
+  sig_catch(sig_term, sig_term_handler);
 
   /* console */
   if ((ttyfd =open_write("/dev/console")) != -1) {
@@ -131,7 +137,8 @@ int main (int argc, const char * const *argv, char * const *envp) {
       sig_uncatch(sig_int);
       sig_unblock(sig_pipe);
       sig_unblock(sig_term);
-            
+      sig_uncatch(sig_term);
+
       strerr_warn3(INFO, "enter stage: ", stage[st], 0);
       execve(*prog, (char *const *)prog, envp);
       strerr_die4sys(0, FATAL, "unable to start child: ", stage[st], ": ");
@@ -144,6 +151,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
 
       sig_unblock(sig_child);
       sig_unblock(sig_cont);
+      sig_unblock(sig_term);
       sig_unblock(sig_int);
 #ifdef IOPAUSE_POLL
       poll(&x, 1, 14000);
@@ -156,6 +164,7 @@ int main (int argc, const char * const *argv, char * const *envp) {
       sig_block(sig_cont);
       sig_block(sig_child);
       sig_block(sig_int);
+      sig_block(sig_term);
       
       while (read(selfpipe[0], &ch, 1) == 1) {}
       while ((child =wait_nohang(&wstat)) > 0)
