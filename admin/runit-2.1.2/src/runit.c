@@ -348,7 +348,9 @@ int main (int argc, const char * const *argv, char * const *envp) {
   }
 #endif
 
-  for (;;) sig_pause();
+  // When in a docker container, we actually want to return(0);
+  // We should NOT loop sig_pause(); forever.
+  // for (;;) sig_pause();
   /* not reached */
   strerr_die2x(0, INFO, "exit.");
   return(0);
