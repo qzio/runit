@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "runit.h"
 #include "sig.h"
 #include "strerr.h"
@@ -327,7 +329,8 @@ int main (int argc, const char * const *argv, char * const *envp) {
 #ifdef RB_HALT_SYSTEM
     strerr_warn2(INFO, "system halt.", 0);
     sync();
-    reboot_system(RB_HALT_SYSTEM);
+    // Patch to play nice with docker, exit instead of "reboot_system(RB_HALT_SYSTEM);"
+    exit(0);
 #else
 #ifdef RB_HALT
     strerr_warn2(INFO, "system halt.", 0);
